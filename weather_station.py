@@ -22,10 +22,10 @@ def write_data(humidity, temperature):
         timestamp = time.ctime()
         data = timestamp + ', ' \
                + str(humidity) + ', ' \
-               + str(temperature) + '\n'
+               + str(temperature) 
         if PRINT_DATA:
             print(data)
-        data_file.write(data)
+        data_file.write(data+ '\n')
         data_file.close()
     return
 
@@ -54,7 +54,6 @@ PRINT_DATA = True # Whether to print data to screen.
 push_button = Button(BUTTON_PIN)
 status_led = LED(STATUS_LED_PIN)
 error_led = LED(ERROR_LED_PIN)
-#turned_on = True # For now, assume always turned on.  Later we'll find a way to turn it off.
 
 # Create blank data file and write headers.
 initialize_file(FILENAME)
@@ -74,5 +73,7 @@ while not push_button.is_pressed:
     time.sleep(READ_INTERVAL)
 
 print('Done collecting data.')
-
+error_led.on()
+time.sleep(2)
+error_led.off()
 
