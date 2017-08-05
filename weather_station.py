@@ -40,6 +40,14 @@ def initialize_file(name):
     data_file.close()
     return
 
+def end_data_collection():
+    """ Set logging to False to end data collection. """
+    print("Data collection halted.  Wrapping up...")
+    global logging
+    logging = False
+    error_led.on()
+    return
+
 # Global constants
 STATUS_LED_PIN = 25 # GPIO pin for {green} status led
 ERROR_LED_PIN = 16 # GPIO pin for {red} error led
@@ -48,7 +56,7 @@ DHT_PIN = 23 # GPIO pin for dht temp/humidity sensor
 READ_INTERVAL = 0.5 # Seconds between data readings.
 FILENAME = 'weather.txt'
 FAHRENHEIT = True # Set to False for Celsius readings.
-PRINT_DATA = True # Whether to print data to screen.
+PRINT_DATA = False # Whether to print data to screen.
 
 # Create Button and LED objects
 push_button = Button(BUTTON_PIN)
@@ -62,18 +70,18 @@ initialize_file(FILENAME)
 print('Press button to begin collecting data.')
 push_button.wait_for_press()
 time.sleep(1)
+push_button.when_pressed = end_data_collection
 
 # Collect data at intervals
 print('Collecting data. Press button to stop.')
-while not push_button.is_pressed:
+logging = True # Will be set to False when button is pressed.
+while logging:
     status_led.on()
     humidity, temperature = get_reading()
     write_data(humidity, temperature)
     status_led.off()
     time.sleep(READ_INTERVAL)
 
-print('Done collecting data.')
-error_led.on()
-time.sleep(2)
 error_led.off()
+print('Done.')
 
