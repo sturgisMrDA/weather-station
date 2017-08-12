@@ -31,6 +31,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 #--------------------------------------
+# Edited for use as a module by Aaron D.A. 8/12/17
+
 import smbus
 import time
 
@@ -44,8 +46,10 @@ LCD_CMD = 0 # Mode - Sending command
 
 LCD_LINE_1 = 0x80 # LCD RAM address for the 1st line
 LCD_LINE_2 = 0xC0 # LCD RAM address for the 2nd line
-LCD_LINE_3 = 0x94 # LCD RAM address for the 3rd line
-LCD_LINE_4 = 0xD4 # LCD RAM address for the 4th line
+# Using 1602 two-line LCD so don't need these:
+#LCD_LINE_3 = 0x94 # LCD RAM address for the 3rd line
+#LCD_LINE_4 = 0xD4 # LCD RAM address for the 4th line
+LCD_LINES = {1:LCD_LINE_1, 2:LCD_LINE_2}
 
 LCD_BACKLIGHT  = 0x08  # On
 #LCD_BACKLIGHT = 0x00  # Off
@@ -60,8 +64,8 @@ E_DELAY = 0.0005
 #bus = smbus.SMBus(0)  # Rev 1 Pi uses 0
 bus = smbus.SMBus(1) # Rev 2 Pi uses 1
 
-def lcd_init():
-  # Initialise display
+def init():
+  """ Initialise display. """
   lcd_byte(0x33,LCD_CMD) # 110011 Initialise
   lcd_byte(0x32,LCD_CMD) # 110010 Initialise
   lcd_byte(0x06,LCD_CMD) # 000110 Cursor move direction
@@ -70,6 +74,11 @@ def lcd_init():
   lcd_byte(0x01,LCD_CMD) # 000001 Clear display
   time.sleep(E_DELAY)
 
+def clear():
+  """ Clear display without other initialization. """
+  lcd_byte(0x01,LCD_CMD) # 000001 Clear display
+  time.sleep(E_DELAY)
+  
 def lcd_byte(bits, mode):
   # Send byte to data pins
   # bits = the data
@@ -105,32 +114,21 @@ def lcd_string(message,line):
   for i in range(LCD_WIDTH):
     lcd_byte(ord(message[i]),LCD_CHR)
 
-def main():
-  # Main program block
-
-  # Initialise display
-  lcd_init()
-
-  while True:
-
-    # Send some test
-    lcd_string("RPiSpy         <",LCD_LINE_1)
-    lcd_string("I2C LCD        <",LCD_LINE_2)
-
-    time.sleep(3)
+def write_line(message,line,echo=False):
+  """ Write message to the LCD on given line; echo to screen if desired.    """
+  lcd_string(message,LCD_LINES[line])
+  # Note that messages will be echoed in order sent, not in LCD line order.
+  if echo:
+    print(message)
   
-    # Send some more text
-    lcd_string(">         RPiSpy",LCD_LINE_1)
-    lcd_string(">        I2C LCD",LCD_LINE_2)
 
-    time.sleep(3)
-
-if __name__ == '__main__':
-
-  try:
-    main()
-  except KeyboardInterrupt:
-    pass
-  finally:
-    lcd_byte(0x01, LCD_CMD)
-
+def write_lines(line1,line2,echo=False):
+  """ Write text to both lines of the LCD; echo to screen if desired.  """
+  lcd_string(line1,LCD_LINES[1])
+  lcd_string(line2,LCD_LINES[2])
+  if echo:
+    print(line1, line2)
+  
+  
+  
+  
